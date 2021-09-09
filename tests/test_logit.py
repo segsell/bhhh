@@ -47,7 +47,7 @@ def test_logit_compare_bhhh_and_sm(data):
         """Logit criterion function.
 
         Args:
-            params (np.ndarray): Parameter vector of length n_obs.
+            params (np.ndarray): Parameter vector of shape (n_obs,).
 
         Returns:
             loglike (np.ndarray): Array of negative loglikelihood contributions of
