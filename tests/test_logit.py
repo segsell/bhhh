@@ -1,19 +1,18 @@
 from functools import partial
-import pytest
+
 import numpy as np
+import pytest
+import statsmodels.api as sm
+from bhhh.optimize import minimize_bhhh
 from numpy.testing import assert_array_almost_equal as aaae
 
-import statsmodels.api as sm
-from bhhh import minimize_bhhh
 
-
-def _cdf(X):
-    return 1 / (1 + np.exp(-X))
+def _cdf(x):
+    return 1 / (1 + np.exp(-x))
 
 
 def scoreobs(endog, exog, params):
-    L = _cdf(np.dot(exog, params))
-    return (endog - L)[:, None] * exog
+    return (endog - _cdf(np.dot(exog, params)))[:, None] * exog
 
 
 def loglikeobs(endog, exog, params):
@@ -21,7 +20,7 @@ def loglikeobs(endog, exog, params):
     return np.log(_cdf(q * np.dot(exog, params)))
 
 
-@pytest.fixture
+@pytest.fixture()
 def data():
     np.random.seed(12)
 
@@ -39,17 +38,17 @@ def data():
     return endog, exog
 
 
-def test_fail(data):
+def test_logit_compare_bhhh_and_sm(data):
     endog, exog = data
     scoreobs_p = partial(scoreobs, endog, exog)
     loglikeobs_p = partial(loglikeobs, endog, exog)
 
     def logit_criterion(params):
         """Logit criterion function.
-    
+
         Args:
             params (np.ndarray): Parameter vector of length n_obs.
-    
+
         Returns:
             loglike (np.ndarray): Array of negative loglikelihood contributions of
                 shape (n_obs,).

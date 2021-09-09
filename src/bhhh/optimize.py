@@ -1,4 +1,5 @@
 from typing import Optional
+
 import numpy as np
 
 
@@ -7,22 +8,22 @@ def minimize_bhhh(
     x0: np.ndarray,
     tol: Optional[float] = 1e-8,
     maxiter: Optional[int] = 100,
-):
+) -> np.ndarray:
     """
     Minimization of scalar function of one or more variables via the BHHH algorithm.
-    
+
     Args:
         fun (callable): The objective function to be minimized.
-        x0 (np.ndarray): Initial guess. Array of real elements of size (n,), 
+        x0 (np.ndarray): Initial guess. Array of real elements of size (n,),
             where `n` is the number of independent variables, i.e. parameters.
     tol (float): Tolerance for termination.
         maxiter(int): Maximum number of iterations to perform.
 
-    Returns:   
+    Returns:
         x_hat(np.ndarray): The solution array of size (n,) containing fitted
         parameter values.
     """
-    # Approxmiate the Hessian as the outer product of the Jacobian
+    # Approxmiate Hessian as the outer product of the Jacobian
     old_fval, old_jac = fun(x0)
     hess_approx = np.dot(old_jac.T, old_jac)
 
@@ -74,4 +75,3 @@ def minimize_bhhh(
     x_hat = x0
 
     return x_hat
-

@@ -1,0 +1,24 @@
+# Files
+.coverage
+coverage.*
+.pyc
+.DS_Store
+.txt
+
+# Folders
+.idea
+.ipynb_checkpoints
+.tox
+.vscode
+_build
+_generated
+__pxcache__
+__pycache__
+.ipynb_checkpoints
+
+*.egg-info
+.eggs
+
+_build
+dist
+src/bhhh/_version.py
