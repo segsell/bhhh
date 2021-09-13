@@ -43,21 +43,33 @@ def test_logit_compare_bhhh_and_sm(data):
     scoreobs_p = partial(scoreobs, endog, exog)
     loglikeobs_p = partial(loglikeobs, endog, exog)
 
-    def logit_criterion(params):
+    def logit_criterion(params, task="criterion_and_derivative"):
         """Logit criterion function.
 
         Args:
             params (np.ndarray): Parameter vector of shape (n_obs,).
+            task (str): If task=="criterion", compute log-likelihood.
+                If task=="derivative", compute jacobian.
+                If task="criterion_and_derivative", compute both.
 
         Returns:
-            loglike (np.ndarray): Array of negative loglikelihood contributions of
-                shape (n_obs,).
-            jac (np.ndarray): Array of the jacobian of shape (n_obs, n_params).
+            np.ndarray or tuple: If task=="criterion" it returns the output of
+                criterion, which is a 1d numpy array.
+                If task=="derivative" it returns the first derivative of criterion,
+                which is a numpy array.
+                If task=="criterion_and_derivative" it returns both as a tuple.
         """
-        jac = scoreobs_p(params)
-        loglike = -loglikeobs_p(params)
+        res = ()
 
-        return loglike, jac
+        if "criterion" in task:
+            res += (-loglikeobs_p(params),)
+        if "derivative" in task:
+            res += (scoreobs_p(params),)
+
+        if len(res) == 1:
+            (res,) = res
+
+        return res
 
     params = np.zeros(exog.shape[1])
     calculated = minimize_bhhh(logit_criterion, params)
