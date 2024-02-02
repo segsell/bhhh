@@ -74,7 +74,8 @@ def criterion_logit(x):
         x (np.ndarray): Parameter vector of shape (n_params,).
 
     Returns:
-        float: The negative loglikelihood of the Logit model.
+        np.ndarray: 2d array of shape (n_obs,) containing the negative
+            loglikelihood contributions of the Logit model.
 
     """
     endog, exog = generate_test_data()
@@ -88,7 +89,7 @@ def derivative_logit(x):
         x (np.ndarray): Parameter vector of shape (n_params,).
 
     Returns:
-        np.ndarray: 2d array containing the scores of the Logit model
+        np.ndarray: 2d array of shape (n_obs, n_params) containing
             of shape (n_obs, n_params).
 
     """
@@ -126,7 +127,8 @@ def criterion_probit(x):
         x (np.ndarray): Parameter vector of shape (n_params,).
 
     Returns:
-        float: The negative loglikelihood of the Probit model.
+        np.ndarray: 2d array of shape (n_obs,) containing the negative
+            loglikelihood contributions of the Probit model.
 
     """
     endog, exog = generate_test_data()
@@ -140,8 +142,8 @@ def derivative_probit(x):
         x (np.ndarray): Parameter vector of shape (n_params,).
 
     Returns:
-        np.ndarray: 2d array containing the scores of the Probit model
-            of shape (n_obs, n_params).
+        np.ndarray: 2d array of shape (n_obs, n_params) containing
+            the scores of the Probit model.
 
     """
     endog, exog = generate_test_data()
@@ -149,7 +151,7 @@ def derivative_probit(x):
 
 
 # =====================================================================================
-# Test
+# Tests
 # =====================================================================================
 
 
