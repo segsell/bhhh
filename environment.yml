@@ -12,14 +12,15 @@ dependencies:
 
   # Package dependencies
   - numpy
-  - numba
-  - matplotlib
   - pandas
-  - scikit-learn
   - statsmodels
 
   # Misc
   - black
-  - flake8
   - pdbpp
   - pre-commit
+
+
+  - pip:
+
+    - -e . # install locally
