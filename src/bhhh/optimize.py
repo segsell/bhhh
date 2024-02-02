@@ -9,8 +9,7 @@ def minimize_bhhh(
     tol: Optional[float] = 1e-8,
     maxiter: Optional[int] = 100,
 ) -> np.ndarray:
-    """
-    Minimization of scalar function of one or more variables via the BHHH algorithm.
+    """Minimization of a scalar function via the BHHH algorithm.
 
     Args:
         fun (callable): The objective function to be minimized.
