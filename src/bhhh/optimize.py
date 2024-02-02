@@ -1,79 +1,95 @@
+"""Implementation of the unconstrained Berndt-Hall-Hall-Hausman (BHHH) algorithm."""
 from typing import Optional
 
 import numpy as np
 
 
 def minimize_bhhh(
-    fun: callable,
-    x0: np.ndarray,
-    tol: Optional[float] = 1e-8,
-    maxiter: Optional[int] = 100,
+    criterion_and_derivative: callable,
+    x: np.ndarray,
+    convergence_absolute_gradient_tolerance: Optional[float] = 1e-8,
+    stopping_max_iterations: Optional[int] = 200,
 ) -> np.ndarray:
-    """Minimization of a scalar function via the BHHH algorithm.
+    """Minimize a likelihood function using the BHHH algorithm.
 
     Args:
-        fun (callable): The objective function to be minimized.
-        x0 (np.ndarray): Initial guess. Array of real elements of size (n,),
-            where `n` is the number of independent variables, i.e. parameters.
-        tol (float): Tolerance for termination.
-        maxiter(int): Maximum number of iterations to perform.
+        criterion_and_derivative (callable): The objective function to be minimized.
+        x (np.ndarray): Initial guess of the parameter vector (starting points).
+        convergence_absolute_gradient_tolerance (float): Stopping criterion for the
+            gradient tolerance.
+        stopping_max_iterations (int): Maximum number of iterations. If reached,
+            terminate.
 
     Returns:
-        x_hat(np.ndarray): The solution array of size (n,) containing fitted
-        parameter values.
+        (dict) Result dictionary containing:
+
+        - solution_x (np.ndarray): Solution vector of shape (n,).
+        - solution_criterion (np.ndarray): Likelihood at the solution. Shape (n_obs,).
+        - n_iterations (int): Number of iterations the algorithm ran before finding a
+            solution or reaching stopping_max_iterations.
+
     """
-    old_fval, old_jac = fun(x0, task="criterion_and_derivative")
+    criterion_accepted, gradient = criterion_and_derivative(x)
+    x_accepted = x
 
-    # Approxmiate Hessian as the outer product of the Jacobian
-    hess_approx = np.dot(old_jac.T, old_jac)
+    hessian_approx = np.dot(gradient.T, gradient)
+    gradient_sum = np.sum(gradient, axis=0)
+    direction = np.linalg.solve(hessian_approx, gradient_sum)
+    gtol = np.dot(gradient_sum, direction)
 
-    jac_sum = np.sum(hess_approx, axis=0)
-    direc = np.linalg.solve(hess_approx, jac_sum)  # Current direction set
-    jacdirec = np.dot(jac_sum, direc)
+    initial_step_size = 1
+    step_size = initial_step_size
 
-    # Initialize step size
-    lambda0 = 1
-    lambdak = lambda0
+    niter = 1
+    while niter < stopping_max_iterations:
+        niter += 1
 
-    for _ in range(maxiter):
-        xk = x0 + lambdak * direc
-
-        fval = fun(xk, task="criterion")
+        x_candidate = x_accepted + step_size * direction
+        criterion_candidate, gradient = criterion_and_derivative(x_candidate)
 
         # If previous step was accepted
-        if lambdak == lambda0:
-            jac = fun(xk, task="derivative")
-            hess_approx = np.dot(jac.T, jac)
+        if step_size == initial_step_size:
+            hessian_approx = np.dot(gradient.T, gradient)
+
+        else:
+            criterion_candidate, gradient = criterion_and_derivative(x_candidate)
 
         # Line search
-        if np.sum(fval) > np.sum(old_fval):
-            lambdak /= 2
+        if np.sum(criterion_candidate) > np.sum(criterion_accepted):
+            step_size /= 2
 
-            if lambdak <= 0.01:
+            if step_size <= 0.01:
                 # Accept step
-                x0 = xk
-                old_fval = fval
+                x_accepted = x_candidate
+                criterion_accepted = criterion_candidate
 
                 # Reset step size
-                lambdak = lambda0
+                step_size = initial_step_size
 
         # If decrease in likelihood, calculate new direction vector
         else:
             # Accept step
-            x0 = xk
-            old_fval = fval
+            x_accepted = x_candidate
+            criterion_accepted = criterion_candidate
 
-            jac = fun(xk, task="derivative")
-            jac_sum = np.sum(jac, axis=0)
-            direc = np.linalg.solve(hess_approx, jac_sum)
-            jacdirec = np.dot(jac_sum, direc)
+            gradient_sum = np.sum(gradient, axis=0)
+            direction = np.linalg.solve(hessian_approx, gradient_sum)
+            gtol = np.dot(gradient_sum, direction)
+
+            if gtol < 0:
+                hessian_approx = np.dot(gradient.T, gradient)
+                direction = np.linalg.solve(hessian_approx, gradient_sum)
 
             # Reset stepsize
-            lambdak = lambda0
+            step_size = initial_step_size
 
-        if jacdirec < tol:  # Stopping rule
+        if gtol < convergence_absolute_gradient_tolerance:
             break
 
-    x_hat = x0
+    result_dict = {
+        "solution_x": x_accepted,
+        "solution_criterion": criterion_accepted,
+        "n_iterations": niter,
+    }
 
-    return x_hat
+    return result_dict

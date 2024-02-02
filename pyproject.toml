@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.0"]
+
+[tool.setuptools_scm]
+write_to = "src/bhhh/_version.py"
+
+[tool.ruff]
+target-version = "py310"
+fix = true
+
+select = [
+  # pyflakes
+  "F",
+  # pycodestyle
+  "E",
+  "W",
+  # flake8-2020
+  "YTT",
+  # flake8-bugbear
+  "B",
+  # flake8-quotes
+  "Q",
+  # pylint
+  "PLE", "PLR", "PLW",
+  # misc lints
+  "PIE",
+  # tidy imports
+  "TID",
+  # implicit string concatenation
+  "ISC",
+]
+
+extend-ignore = [
+
+  # allow module import not at top of file, important for notebooks
+  "E402",
+  # do not assign a lambda expression, use a def
+  "E731",
+  # Too many arguments to function call
+  "PLR0913",
+  # Too many returns
+  "PLR0911",
+  # Too many branches
+  "PLR0912",
+  # Too many statements
+  "PLR0915",
+  # Magic number
+  "PLR2004",
+  # Consider `elif` instead of `else` then `if` to remove indentation level
+  "PLR5501",
+  # For calls to warnings.warn(): No explicit `stacklevel` keyword argument found
+  "B028",
+]
+
+[tool.ruff.pydocstyle]
+convention = "google"
+
+[tool.nbqa.config]
+black = "pyproject.toml"
+
+[tool.nbqa.mutate]
+black = 1
+
+[tool.yamlfix]
+line_length = 88
+sequence_style = "block_style"
+none_representation = "null"

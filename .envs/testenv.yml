@@ -23,4 +23,4 @@ dependencies:
 
   - pip:
 
-    - -e . # install locally
+    - -e ../ # install locally
