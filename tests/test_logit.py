@@ -1,12 +1,15 @@
 """Test the BHHH algorithm."""
-from functools import partial
-
 import numpy as np
 import pytest
 import statsmodels.api as sm
 from bhhh.optimize import minimize_bhhh
 from numpy.testing import assert_array_almost_equal as aaae
 from scipy.stats import norm
+
+
+# =====================================================================================
+# Test Data
+# =====================================================================================
 
 
 def generate_test_data(seed=12):
@@ -26,6 +29,27 @@ def generate_test_data(seed=12):
     return endog, exog
 
 
+@pytest.fixture()
+def result_statsmodels_logit():
+    endog, exog = generate_test_data()
+    result = sm.Logit(endog, exog).fit()
+
+    return result
+
+
+@pytest.fixture()
+def result_statsmodels_probit():
+    endog, exog = generate_test_data()
+    result = sm.Probit(endog, exog).fit()
+
+    return result
+
+
+# =====================================================================================
+# Logit
+# =====================================================================================
+
+
 def _cdf_logit(x):
     return 1 / (1 + np.exp(-x))
 
@@ -41,6 +65,40 @@ def get_score_logit(endog, exog, x):
     linear_prediction = np.dot(exog, x)
 
     return (endog - _cdf_logit(linear_prediction))[:, None] * exog
+
+
+def criterion_logit(x):
+    """Return Logit criterion.
+
+    Args:
+        x (np.ndarray): Parameter vector of shape (n_params,).
+
+    Returns:
+        float: The negative loglikelihood of the Logit model.
+
+    """
+    endog, exog = generate_test_data()
+    return -get_loglikelihood_logit(endog=endog, exog=exog, x=x)
+
+
+def derivative_logit(x):
+    """Return Logit derivative.
+
+    Args:
+        x (np.ndarray): Parameter vector of shape (n_params,).
+
+    Returns:
+        np.ndarray: 2d array containing the scores of the Logit model
+            of shape (n_obs, n_params).
+
+    """
+    endog, exog = generate_test_data()
+    return get_score_logit(endog=endog, exog=exog, x=x)
+
+
+# =====================================================================================
+# Probit
+# =====================================================================================
 
 
 def get_loglikelihood_probit(endog, exog, x):
@@ -61,55 +119,33 @@ def get_score_probit(endog, exog, x):
     return derivative_loglikelihood[:, None] * exog
 
 
-def criterion_and_derivative_logit(x):
-    """Return Logit criterion and derivative.
+def criterion_probit(x):
+    """Return Probit criterion.
 
     Args:
-        x (np.ndarray): Parameter vector of shape (n_obs,).
+        x (np.ndarray): Parameter vector of shape (n_params,).
 
     Returns:
-        tuple: first entry is the criterion, second entry is the score
+        float: The negative loglikelihood of the Probit model.
 
     """
     endog, exog = generate_test_data()
-    score = partial(get_score_logit, endog, exog)
-    loglike = partial(get_loglikelihood_logit, endog, exog)
-
-    return -loglike(x), score(x)
+    return -get_loglikelihood_probit(endog=endog, exog=exog, x=x)
 
 
-def criterion_and_derivative_probit(x):
-    """Return Probit criterion and derivative.
+def derivative_probit(x):
+    """Return Probit derivative.
 
     Args:
-        x (np.ndarray): Parameter vector of shape (n_obs,).
+        x (np.ndarray): Parameter vector of shape (n_params,).
 
     Returns:
-        tuple: first entry is the criterion, second entry is the score
+        np.ndarray: 2d array containing the scores of the Probit model
+            of shape (n_obs, n_params).
 
     """
     endog, exog = generate_test_data()
-
-    score = partial(get_score_probit, endog, exog)
-    loglike = partial(get_loglikelihood_probit, endog, exog)
-
-    return -loglike(x), score(x)
-
-
-@pytest.fixture()
-def result_statsmodels_logit():
-    endog, exog = generate_test_data()
-    result = sm.Logit(endog, exog).fit()
-
-    return result
-
-
-@pytest.fixture()
-def result_statsmodels_probit():
-    endog, exog = generate_test_data()
-    result = sm.Probit(endog, exog).fit()
-
-    return result
+    return get_score_probit(endog=endog, exog=exog, x=x)
 
 
 # =====================================================================================
@@ -118,19 +154,20 @@ def result_statsmodels_probit():
 
 
 @pytest.mark.parametrize(
-    ("criterion_and_derivative", "result_statsmodels"),
+    ("criterion", "derivative", "result_statsmodels"),
     [
-        (criterion_and_derivative_logit, "result_statsmodels_logit"),
-        (criterion_and_derivative_probit, "result_statsmodels_probit"),
+        (criterion_logit, derivative_logit, "result_statsmodels_logit"),
+        (criterion_probit, derivative_probit, "result_statsmodels_probit"),
     ],
 )
-def test_maximum_likelihood(criterion_and_derivative, result_statsmodels, request):
+def test_maximum_likelihood(criterion, derivative, result_statsmodels, request):
     result_expected = request.getfixturevalue(result_statsmodels)
 
     x = np.zeros(3)
 
     result_bhhh = minimize_bhhh(
-        criterion_and_derivative,
+        criterion=criterion,
+        derivative=derivative,
         x=x,
         convergence_absolute_gradient_tolerance=1e-8,
         stopping_max_iterations=200,

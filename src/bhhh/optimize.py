@@ -5,7 +5,8 @@ import numpy as np
 
 
 def minimize_bhhh(
-    criterion_and_derivative: callable,
+    criterion: callable,
+    derivative: callable,
     x: np.ndarray,
     convergence_absolute_gradient_tolerance: Optional[float] = 1e-8,
     stopping_max_iterations: Optional[int] = 200,
@@ -13,7 +14,8 @@ def minimize_bhhh(
     """Minimize a likelihood function using the BHHH algorithm.
 
     Args:
-        criterion_and_derivative (callable): The objective function to be minimized.
+        criterion (callable): The objective function to be minimized.
+        derivative (callable): The derivative of the objective function.
         x (np.ndarray): Initial guess of the parameter vector (starting points).
         convergence_absolute_gradient_tolerance (float): Stopping criterion for the
             gradient tolerance.
@@ -29,13 +31,15 @@ def minimize_bhhh(
             solution or reaching stopping_max_iterations.
 
     """
-    criterion_accepted, gradient = criterion_and_derivative(x)
     x_accepted = x
 
-    hessian_approx = np.dot(gradient.T, gradient)
-    gradient_sum = np.sum(gradient, axis=0)
-    direction = np.linalg.solve(hessian_approx, gradient_sum)
-    gtol = np.dot(gradient_sum, direction)
+    criterion_accepted = criterion(x)
+    jacobian = derivative(x)
+
+    hessian_approx = np.dot(jacobian.T, jacobian)
+    gradient = np.sum(jacobian, axis=0)
+    direction = np.linalg.solve(hessian_approx, gradient)
+    gtol = np.dot(gradient, direction)
 
     initial_step_size = 1
     step_size = initial_step_size
@@ -45,14 +49,12 @@ def minimize_bhhh(
         niter += 1
 
         x_candidate = x_accepted + step_size * direction
-        criterion_candidate, gradient = criterion_and_derivative(x_candidate)
+        criterion_candidate = criterion(x_candidate)
 
         # If previous step was accepted
         if step_size == initial_step_size:
-            hessian_approx = np.dot(gradient.T, gradient)
-
-        else:
-            criterion_candidate, gradient = criterion_and_derivative(x_candidate)
+            jacobian = derivative(x_candidate)
+            hessian_approx = np.dot(jacobian.T, jacobian)
 
         # Line search
         if np.sum(criterion_candidate) > np.sum(criterion_accepted):
@@ -72,13 +74,14 @@ def minimize_bhhh(
             x_accepted = x_candidate
             criterion_accepted = criterion_candidate
 
-            gradient_sum = np.sum(gradient, axis=0)
-            direction = np.linalg.solve(hessian_approx, gradient_sum)
-            gtol = np.dot(gradient_sum, direction)
+            jacobian = derivative(x_accepted)
+            gradient = np.sum(jacobian, axis=0)
+            direction = np.linalg.solve(hessian_approx, gradient)
+            gtol = np.dot(gradient, direction)
 
             if gtol < 0:
-                hessian_approx = np.dot(gradient.T, gradient)
-                direction = np.linalg.solve(hessian_approx, gradient_sum)
+                hessian_approx = np.dot(jacobian.T, jacobian)
+                direction = np.linalg.solve(hessian_approx, gradient)
 
             # Reset stepsize
             step_size = initial_step_size
