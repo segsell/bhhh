@@ -13,10 +13,27 @@ def minimize_bhhh(
 ) -> np.ndarray:
     """Minimize a likelihood function using the BHHH algorithm.
 
+    The BHHH algorithm is an iterative method to minimize a likelihood function. It
+    uses the Hessian approximation to calculate the direction of the next step. The
+    algorithm is based on the Newton-Raphson method and is used to find the maximum
+    likelihood estimates of the parameters.
+
+    Note that this function expects a criterion function that returns the negative
+    loglikelihood contributions of the model and a derivative function that returns
+    the scores of the model. Finding the minimum of the negative loglikelihood is
+    equivalent to finding the maximum of the likelihood.
+
+    The internal criterion_candidate vector of shape (n_obs,) contains the likelihood
+    contributions of the model. The jacobian matrix of shape (n_obs, n_params)
+    contains the scores of the model.
+
     Args:
-        criterion (callable): The objective function to be minimized.
-        derivative (callable): The derivative of the objective function.
-        x (np.ndarray): Initial guess of the parameter vector (starting points).
+        criterion (callable): The objective function to be minimized, i.e. the
+            negative loglikelihood contributions of the model.
+        derivative (callable): Function returning the derivative of the
+            objective function, i.e. the scores of the model.
+        x (np.ndarray): Initial guess of the parameter vector (starting points)
+            of shape (n_params,).
         convergence_absolute_gradient_tolerance (float): Stopping criterion for the
             gradient tolerance.
         stopping_max_iterations (int): Maximum number of iterations. If reached,
@@ -25,8 +42,10 @@ def minimize_bhhh(
     Returns:
         (dict) Result dictionary containing:
 
-        - solution_x (np.ndarray): Solution vector of shape (n,).
-        - solution_criterion (np.ndarray): Likelihood at the solution. Shape (n_obs,).
+        - solution_x (np.ndarray): Solution vector of shape (n_params,).
+        - solution_criterion (np.ndarray): Array of shape (n_obs,) containing the
+            likelihood contributions at the solution. The sum of this array is the
+            negative loglikelihood at the solution.
         - n_iterations (int): Number of iterations the algorithm ran before finding a
             solution or reaching stopping_max_iterations.
 
