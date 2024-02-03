@@ -1,4 +1,5 @@
 """Implementation of the unconstrained Berndt-Hall-Hall-Hausman (BHHH) algorithm."""
+from typing import Any
 from typing import Dict
 from typing import Optional
 from typing import Union
@@ -11,8 +12,7 @@ def minimize_bhhh(
     derivative: callable,
     x: np.ndarray,
     counts: np.ndarray = None,
-    has_aux: bool = False,
-    aux_start: Optional[np.ndarray] = None,
+    aux_data: Any = None,
     convergence_absolute_gradient_tolerance: Optional[float] = 1e-8,
     stopping_max_iterations: Optional[int] = 200,
 ) -> Dict[str, Union[np.ndarray, int]]:
@@ -42,6 +42,9 @@ def minimize_bhhh(
         counts (np.ndarray): Array of shape (n_obs,) containing the number of
             observations for each likelihood contribution. If None, the criterion
             function is assumed to return for each observation one contribution.
+        aux_data (Any): Auxiliary data to be passed to the criterion and
+            derivative functions. If it is provided the criterion and derivative
+            functions are expected to take two arguments and return two arguments.
         convergence_absolute_gradient_tolerance (float): Stopping criterion for the
             gradient tolerance.
         stopping_max_iterations (int): Maximum number of iterations. If reached,
@@ -58,16 +61,14 @@ def minimize_bhhh(
             solution or reaching stopping_max_iterations.
 
     """
-    if has_aux and aux_start is None:
-        raise ValueError("Auxiliary inputs are required but not provided.")
 
     criterion_internal, derivative_internal, proxy_hessian = process_functions(
-        criterion, derivative, counts, has_aux
+        criterion, derivative, counts, aux_data
     )
 
     x_accepted = x
 
-    criterion_accepted, aux = criterion_internal(x, aux_start)
+    criterion_accepted, aux = criterion_internal(x, aux_data)
     score, aux = derivative_internal(x, aux)
 
     hessian_approx = proxy_hessian(score)
@@ -136,12 +137,12 @@ def minimize_bhhh(
     return result_dict
 
 
-def process_functions(criterion, derivative, counts, has_aux):
+def process_functions(criterion, derivative, counts, aux_data):
     """This function process the criterion and derivative function, such that they
     can handle auxilary data as well as a cell based likelihood. If has_aux is True
     criterion and derivative function ar both expected to take two arguments and
     return two arguments."""
-    if has_aux:
+    if aux_data is not None:
 
         def criterion_internal_aux(x, aux):
             return criterion(x, aux)
