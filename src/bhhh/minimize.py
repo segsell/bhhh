@@ -1,5 +1,7 @@
 """Implementation of the unconstrained Berndt-Hall-Hall-Hausman (BHHH) algorithm."""
+from typing import Dict
 from typing import Optional
+from typing import Union
 
 import numpy as np
 
@@ -11,7 +13,7 @@ def minimize_bhhh(
     counts=None,
     convergence_absolute_gradient_tolerance: Optional[float] = 1e-8,
     stopping_max_iterations: Optional[int] = 200,
-) -> np.ndarray:
+) -> Dict[str, Union[np.ndarray, int]]:
     """Minimize a likelihood function using the BHHH algorithm.
 
     The BHHH algorithm is an iterative method to minimize a likelihood function. It
@@ -35,6 +37,9 @@ def minimize_bhhh(
             objective function, i.e. the scores of the model.
         x (np.ndarray): Initial guess of the parameter vector (starting points)
             of shape (n_params,).
+        counts (np.ndarray): Array of shape (n_obs,) containing the number of
+            observations for each likelihood contribution. If None, the criterion
+            function is assumed to return for each observation one contribution.
         convergence_absolute_gradient_tolerance (float): Stopping criterion for the
             gradient tolerance.
         stopping_max_iterations (int): Maximum number of iterations. If reached,
@@ -60,15 +65,29 @@ def minimize_bhhh(
         def derivative_internal(x):
             return derivative(x)
 
-        def proxy_hessian(scores):
-            return np.dot(scores.T, scores)
+        def proxy_hessian(score):
+            return np.dot(score.T, score)
+
+    else:
+        n_obs = np.sum(counts)
+        sqrt_counts = np.sqrt(counts.clip(min=1))
+
+        def criterion_internal(x):
+            return criterion(x) * (counts / n_obs)
+
+        def derivative_internal(x):
+            return derivative(x) * (counts / n_obs)[:, None]
+
+        def proxy_hessian(score):
+            weighted_score = score / sqrt_counts[:, None]
+            return np.dot(weighted_score.T, weighted_score) / n_obs
 
     x_accepted = x
 
     criterion_accepted = criterion_internal(x)
     score = derivative_internal(x)
 
-    hessian_approx = np.dot(score.T, score)
+    hessian_approx = proxy_hessian(score)
     jacobian = np.sum(score, axis=0)
     direction = np.linalg.solve(hessian_approx, jacobian)
     gtol = np.dot(jacobian, direction)
@@ -87,7 +106,7 @@ def minimize_bhhh(
         # If previous step was accepted
         if last_step_accepted:
             score = derivative_internal(x_candidate)
-            hessian_approx = np.dot(score.T, score)
+            hessian_approx = proxy_hessian(score)
 
         # Line search
         if np.sum(criterion_candidate) > np.sum(criterion_accepted):
@@ -115,7 +134,7 @@ def minimize_bhhh(
             gtol = np.dot(jacobian, direction)
 
             if gtol > 0:
-                hessian_approx = np.dot(score.T, score)
+                hessian_approx = proxy_hessian(score)
                 direction = np.linalg.solve(hessian_approx, jacobian)
 
             # Reset stepsize
