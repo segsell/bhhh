@@ -8,6 +8,7 @@ def minimize_bhhh(
     criterion: callable,
     derivative: callable,
     x: np.ndarray,
+    counts=None,
     convergence_absolute_gradient_tolerance: Optional[float] = 1e-8,
     stopping_max_iterations: Optional[int] = 200,
 ) -> np.ndarray:
@@ -50,10 +51,22 @@ def minimize_bhhh(
             solution or reaching stopping_max_iterations.
 
     """
+    # Define internal functions to handle cell based likelihood:
+    if counts is None:
+
+        def criterion_internal(x):
+            return criterion(x)
+
+        def derivative_internal(x):
+            return derivative(x)
+
+        def proxy_hessian(scores):
+            return np.dot(scores.T, scores)
+
     x_accepted = x
 
-    criterion_accepted = criterion(x)
-    score = derivative(x)
+    criterion_accepted = criterion_internal(x)
+    score = derivative_internal(x)
 
     hessian_approx = np.dot(score.T, score)
     jacobian = np.sum(score, axis=0)
@@ -69,11 +82,11 @@ def minimize_bhhh(
         niter += 1
 
         x_candidate = x_accepted - step_size * direction
-        criterion_candidate = criterion(x_candidate)
+        criterion_candidate = criterion_internal(x_candidate)
 
         # If previous step was accepted
         if last_step_accepted:
-            score = derivative(x_candidate)
+            score = derivative_internal(x_candidate)
             hessian_approx = np.dot(score.T, score)
 
         # Line search
@@ -96,7 +109,7 @@ def minimize_bhhh(
             x_accepted = x_candidate
             criterion_accepted = criterion_candidate
 
-            score = derivative(x_accepted)
+            score = derivative_internal(x_accepted)
             jacobian = np.sum(score, axis=0)
             direction = np.linalg.solve(hessian_approx, jacobian)
             gtol = np.dot(jacobian, direction)
