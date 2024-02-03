@@ -10,7 +10,9 @@ def minimize_bhhh(
     criterion: callable,
     derivative: callable,
     x: np.ndarray,
-    counts=None,
+    counts: np.ndarray = None,
+    has_aux: bool = False,
+    aux_start: Optional[np.ndarray] = None,
     convergence_absolute_gradient_tolerance: Optional[float] = 1e-8,
     stopping_max_iterations: Optional[int] = 200,
 ) -> Dict[str, Union[np.ndarray, int]]:
@@ -56,36 +58,17 @@ def minimize_bhhh(
             solution or reaching stopping_max_iterations.
 
     """
-    # Define internal functions to handle cell based likelihood:
-    if counts is None:
+    if has_aux and aux_start is None:
+        raise ValueError("Auxiliary inputs are required but not provided.")
 
-        def criterion_internal(x):
-            return criterion(x)
-
-        def derivative_internal(x):
-            return derivative(x)
-
-        def proxy_hessian(score):
-            return np.dot(score.T, score)
-
-    else:
-        n_obs = np.sum(counts)
-        sqrt_counts = np.sqrt(counts.clip(min=1))
-
-        def criterion_internal(x):
-            return criterion(x) * (counts / n_obs)
-
-        def derivative_internal(x):
-            return derivative(x) * (counts / n_obs)[:, None]
-
-        def proxy_hessian(score):
-            weighted_score = score / sqrt_counts[:, None]
-            return np.dot(weighted_score.T, weighted_score) / n_obs
+    criterion_internal, derivative_internal, proxy_hessian = process_functions(
+        criterion, derivative, counts, has_aux
+    )
 
     x_accepted = x
 
-    criterion_accepted = criterion_internal(x)
-    score = derivative_internal(x)
+    criterion_accepted, aux = criterion_internal(x, aux_start)
+    score, aux = derivative_internal(x, aux)
 
     hessian_approx = proxy_hessian(score)
     jacobian = np.sum(score, axis=0)
@@ -101,11 +84,11 @@ def minimize_bhhh(
         niter += 1
 
         x_candidate = x_accepted - step_size * direction
-        criterion_candidate = criterion_internal(x_candidate)
+        criterion_candidate, aux = criterion_internal(x_candidate, aux)
 
         # If previous step was accepted
         if last_step_accepted:
-            score = derivative_internal(x_candidate)
+            score, aux = derivative_internal(x_candidate, aux)
             hessian_approx = proxy_hessian(score)
 
         # Line search
@@ -128,7 +111,7 @@ def minimize_bhhh(
             x_accepted = x_candidate
             criterion_accepted = criterion_candidate
 
-            score = derivative_internal(x_accepted)
+            score, aux = derivative_internal(x_accepted, aux)
             jacobian = np.sum(score, axis=0)
             direction = np.linalg.solve(hessian_approx, jacobian)
             gtol = np.dot(jacobian, direction)
@@ -151,3 +134,52 @@ def minimize_bhhh(
     }
 
     return result_dict
+
+
+def process_functions(criterion, derivative, counts, has_aux):
+    """This function process the criterion and derivative function, such that they
+    can handle auxilary data as well as a cell based likelihood. If has_aux is True
+    criterion and derivative function ar both expected to take two arguments and
+    return two arguments."""
+    if has_aux:
+
+        def criterion_internal_aux(x, aux):
+            return criterion(x, aux)
+
+        def derivative_internal_aux(x, aux):
+            return derivative(x, aux)
+
+    else:
+
+        def criterion_internal_aux(x, aux):
+            return criterion(x), None
+
+        def derivative_internal_aux(x, aux):
+            return derivative(x), None
+
+    if counts is None:
+
+        def criterion_internal(x, aux):
+            return criterion_internal_aux(x, aux)
+
+        def derivative_internal(x, aux):
+            return derivative_internal_aux(x, aux)
+
+        def proxy_hessian(score):
+            return np.dot(score.T, score)
+
+    else:
+        n_obs = np.sum(counts)
+        sqrt_counts = np.sqrt(counts.clip(min=1))
+
+        def criterion_internal(x, aux):
+            return criterion_internal_aux(x, aux) * (counts / n_obs)
+
+        def derivative_internal(x, aux):
+            return derivative_internal_aux(x, aux) * (counts / n_obs)[:, None]
+
+        def proxy_hessian(score):
+            weighted_score = score / sqrt_counts[:, None]
+            return np.dot(weighted_score.T, weighted_score) / n_obs
+
+    return criterion_internal, derivative_internal, proxy_hessian
