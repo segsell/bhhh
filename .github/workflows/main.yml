@@ -40,7 +40,7 @@ jobs:
         shell: bash -el {0}
         run: |
           micromamba activate bhhh
-          git submodule initi
+          git submodule init
           git submodule update
           pytest --cov-report=xml --cov=./
       - name: Upload coverage report.
