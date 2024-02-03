@@ -53,30 +53,32 @@ def minimize_bhhh(
     x_accepted = x
 
     criterion_accepted = criterion(x)
-    jacobian = derivative(x)
+    score = derivative(x)
 
-    hessian_approx = np.dot(jacobian.T, jacobian)
-    gradient = np.sum(jacobian, axis=0)
-    direction = np.linalg.solve(hessian_approx, gradient)
-    gtol = np.dot(gradient, direction)
+    hessian_approx = np.dot(score.T, score)
+    jacobian = np.sum(score, axis=0)
+    direction = np.linalg.solve(hessian_approx, jacobian)
+    gtol = np.dot(jacobian, direction)
 
     initial_step_size = 1
     step_size = initial_step_size
+    last_step_accepted = True
 
-    niter = 1
+    niter = 0
     while niter < stopping_max_iterations:
         niter += 1
 
-        x_candidate = x_accepted + step_size * direction
+        x_candidate = x_accepted - step_size * direction
         criterion_candidate = criterion(x_candidate)
 
         # If previous step was accepted
-        if step_size == initial_step_size:
-            jacobian = derivative(x_candidate)
-            hessian_approx = np.dot(jacobian.T, jacobian)
+        if last_step_accepted:
+            score = derivative(x_candidate)
+            hessian_approx = np.dot(score.T, score)
 
         # Line search
         if np.sum(criterion_candidate) > np.sum(criterion_accepted):
+            last_step_accepted = False
             step_size /= 2
 
             if step_size <= 0.01:
@@ -86,6 +88,7 @@ def minimize_bhhh(
 
                 # Reset step size
                 step_size = initial_step_size
+                last_step_accepted = True
 
         # If decrease in likelihood, calculate new direction vector
         else:
@@ -93,19 +96,20 @@ def minimize_bhhh(
             x_accepted = x_candidate
             criterion_accepted = criterion_candidate
 
-            jacobian = derivative(x_accepted)
-            gradient = np.sum(jacobian, axis=0)
-            direction = np.linalg.solve(hessian_approx, gradient)
-            gtol = np.dot(gradient, direction)
+            score = derivative(x_accepted)
+            jacobian = np.sum(score, axis=0)
+            direction = np.linalg.solve(hessian_approx, jacobian)
+            gtol = np.dot(jacobian, direction)
 
-            if gtol < 0:
-                hessian_approx = np.dot(jacobian.T, jacobian)
-                direction = np.linalg.solve(hessian_approx, gradient)
+            if gtol > 0:
+                hessian_approx = np.dot(score.T, score)
+                direction = np.linalg.solve(hessian_approx, jacobian)
 
             # Reset stepsize
             step_size = initial_step_size
+            last_step_accepted = True
 
-        if gtol < convergence_absolute_gradient_tolerance:
+        if abs(gtol) < convergence_absolute_gradient_tolerance:
             break
 
     result_dict = {

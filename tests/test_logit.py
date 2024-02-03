@@ -94,7 +94,7 @@ def derivative_logit(x):
 
     """
     endog, exog = generate_test_data()
-    return get_score_logit(endog=endog, exog=exog, x=x)
+    return -get_score_logit(endog=endog, exog=exog, x=x)
 
 
 # =====================================================================================
@@ -147,7 +147,7 @@ def derivative_probit(x):
 
     """
     endog, exog = generate_test_data()
-    return get_score_probit(endog=endog, exog=exog, x=x)
+    return -get_score_probit(endog=endog, exog=exog, x=x)
 
 
 # =====================================================================================

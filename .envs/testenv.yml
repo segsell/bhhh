@@ -9,6 +9,7 @@ dependencies:
   - pip
   - pytest
   - pytest-cov
+  - numba
 
   # Package dependencies
   - numpy
