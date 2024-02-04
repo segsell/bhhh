@@ -169,7 +169,7 @@ def process_functions(criterion, derivative, counts, aux_data):
         sqrt_counts = np.sqrt(counts.clip(min=1))[:, None]
 
         def proxy_hessian(score):
-            weighted_score = score / sqrt_counts
+            weighted_score = (score * n_obs) / sqrt_counts
             return np.dot(weighted_score.T, weighted_score) / n_obs
 
         if aux_data is None:
