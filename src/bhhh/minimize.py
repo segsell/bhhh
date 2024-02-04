@@ -142,45 +142,52 @@ def process_functions(criterion, derivative, counts, aux_data):
     can handle auxilary data as well as a cell based likelihood. If has_aux is True
     criterion and derivative function ar both expected to take two arguments and
     return two arguments."""
-    if aux_data is not None:
-
-        def criterion_internal_aux(x, aux):
-            return criterion(x, aux)
-
-        def derivative_internal_aux(x, aux):
-            return derivative(x, aux)
-
-    else:
-
-        def criterion_internal_aux(x, aux):
-            return criterion(x), None
-
-        def derivative_internal_aux(x, aux):
-            return derivative(x), None
-
     if counts is None:
-
-        def criterion_internal(x, aux):
-            return criterion_internal_aux(x, aux)
-
-        def derivative_internal(x, aux):
-            return derivative_internal_aux(x, aux)
 
         def proxy_hessian(score):
             return np.dot(score.T, score)
 
+        if aux_data is None:
+
+            def criterion_internal(x, aux):
+                return criterion(x), None
+
+            def derivative_internal(x, aux):
+                return derivative(x), None
+
+        else:
+
+            def criterion_internal(x, aux):
+                return criterion(x, aux)
+
+            def derivative_internal(x, aux):
+                return derivative(x, aux)
+
     else:
         n_obs = np.sum(counts)
-        sqrt_counts = np.sqrt(counts.clip(min=1))
-
-        def criterion_internal(x, aux):
-            return criterion_internal_aux(x, aux) * (counts / n_obs)
-
-        def derivative_internal(x, aux):
-            return derivative_internal_aux(x, aux) * (counts / n_obs)[:, None]
+        obs_weights = counts / n_obs
+        sqrt_counts = np.sqrt(counts.clip(min=1))[:, None]
 
         def proxy_hessian(score):
-            weighted_score = score / sqrt_counts[:, None]
+            weighted_score = score / sqrt_counts
             return np.dot(weighted_score.T, weighted_score) / n_obs
+
+        if aux_data is None:
+
+            def criterion_internal(x, aux):
+                return criterion(x) * obs_weights, None
+
+            def derivative_internal(x, aux):
+                return derivative(x) * obs_weights[:, None], None
+
+        else:
+
+            def criterion_internal(x, aux):
+                crit, aux_new = criterion(x, aux)
+                return crit * obs_weights, aux_new
+
+            def derivative_internal(x, aux):
+                dev, aux_new = derivative(x, aux)
+                return dev * obs_weights[:, None], aux_new
 
     return criterion_internal, derivative_internal, proxy_hessian
