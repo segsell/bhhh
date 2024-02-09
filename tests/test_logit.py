@@ -176,3 +176,94 @@ def test_maximum_likelihood(criterion, derivative, result_statsmodels, request):
     )
 
     aaae(result_bhhh["solution_x"], result_expected.params, decimal=4)
+
+
+@pytest.mark.parametrize(
+    ("criterion", "derivative", "result_statsmodels"),
+    [
+        (criterion_logit, derivative_logit, "result_statsmodels_logit"),
+        (criterion_probit, derivative_probit, "result_statsmodels_probit"),
+    ],
+)
+def test_maximum_likelihood_cell_based(
+    criterion, derivative, result_statsmodels, request
+):
+    result_expected = request.getfixturevalue(result_statsmodels)
+
+    x = np.zeros(3)
+    n_obs = criterion(x).shape[0]
+
+    result_bhhh = minimize_bhhh(
+        criterion=criterion,
+        derivative=derivative,
+        x=x,
+        convergence_absolute_gradient_tolerance=1e-12,
+        stopping_max_iterations=200,
+        counts=np.ones(n_obs),
+    )
+
+    aaae(result_bhhh["solution_x"], result_expected.params, decimal=4)
+
+
+@pytest.mark.parametrize(
+    ("criterion", "derivative", "result_statsmodels"),
+    [
+        (criterion_logit, derivative_logit, "result_statsmodels_logit"),
+        (criterion_probit, derivative_probit, "result_statsmodels_probit"),
+    ],
+)
+def test_maximum_likelihood_cell_based_aux(
+    criterion, derivative, result_statsmodels, request
+):
+    result_expected = request.getfixturevalue(result_statsmodels)
+
+    x = np.zeros(3)
+    n_obs = criterion(x).shape[0]
+
+    def crit_with_aux(x, aux):
+        return criterion(x), aux
+
+    def deriv_with_aux(x, aux):
+        return derivative(x), aux
+
+    result_bhhh = minimize_bhhh(
+        criterion=crit_with_aux,
+        derivative=deriv_with_aux,
+        x=x,
+        convergence_absolute_gradient_tolerance=1e-12,
+        stopping_max_iterations=200,
+        counts=np.ones(n_obs),
+        aux_data=1,
+    )
+
+    aaae(result_bhhh["solution_x"], result_expected.params, decimal=4)
+
+
+@pytest.mark.parametrize(
+    ("criterion", "derivative", "result_statsmodels"),
+    [
+        (criterion_logit, derivative_logit, "result_statsmodels_logit"),
+        (criterion_probit, derivative_probit, "result_statsmodels_probit"),
+    ],
+)
+def test_maximum_likelihood_aux(criterion, derivative, result_statsmodels, request):
+    result_expected = request.getfixturevalue(result_statsmodels)
+
+    x = np.zeros(3)
+
+    def crit_with_aux(x, aux):
+        return criterion(x), aux
+
+    def deriv_with_aux(x, aux):
+        return derivative(x), aux
+
+    result_bhhh = minimize_bhhh(
+        criterion=crit_with_aux,
+        derivative=deriv_with_aux,
+        x=x,
+        convergence_absolute_gradient_tolerance=1e-12,
+        stopping_max_iterations=200,
+        aux_data=1,
+    )
+
+    aaae(result_bhhh["solution_x"], result_expected.params, decimal=4)
