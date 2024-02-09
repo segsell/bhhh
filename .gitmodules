@@ -1,3 +1,0 @@
-[submodule "tests/ruspy"]
-	path = tests/ruspy
-	url = https://github.com/OpenSourceEconomics/ruspy.git
