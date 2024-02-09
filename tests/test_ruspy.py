@@ -4,8 +4,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+from bhhh.config import IS_RUSPY_INSTALLED
 from bhhh.minimize import minimize_bhhh
-from ruspy.estimation.criterion_function import get_criterion_function
+
+if IS_RUSPY_INSTALLED:
+    from ruspy.estimation.criterion_function import get_criterion_function
+
 
 TEST_DIR = Path(__file__).parent
 
@@ -29,6 +33,7 @@ def init_dict():
     }
 
 
+@pytest.mark.skipif(not IS_RUSPY_INSTALLED, reason="ruspy not installed.")
 def test_get_criterion_function(input_data, init_dict):
     func_dict, _ = get_criterion_function(init_dict, input_data)
     result_bhhh = minimize_bhhh(
