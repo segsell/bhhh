@@ -3,7 +3,6 @@ name: bhhh
 channels:
   - defaults
   - conda-forge
-  - opensourceeconomics
 
 dependencies:
   - pip
@@ -20,9 +19,6 @@ dependencies:
   - black
   - pdbpp
   - pre-commit
-
-  # Test dependency
-  - ruspy
 
   - pip:
 
