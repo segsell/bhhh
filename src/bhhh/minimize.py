@@ -61,7 +61,6 @@ def minimize_bhhh(
             solution or reaching stopping_max_iterations.
 
     """
-
     criterion_internal, derivative_internal, proxy_hessian = process_functions(
         criterion, derivative, counts, aux_data
     )
@@ -138,10 +137,13 @@ def minimize_bhhh(
 
 
 def process_functions(criterion, derivative, counts, aux_data):
-    """This function process the criterion and derivative function, such that they
-    can handle auxilary data as well as a cell based likelihood. If has_aux is True
-    criterion and derivative function ar both expected to take two arguments and
-    return two arguments."""
+    """This function processes the criterion and derivative function.
+
+    Both can handle auxiliary data as well as a cell based likelihood.
+    If has_aux is True criterion and derivative function ar both expected
+    to take two arguments and return two arguments.
+
+    """
     if counts is None:
 
         def proxy_hessian(score):
@@ -149,10 +151,10 @@ def process_functions(criterion, derivative, counts, aux_data):
 
         if aux_data is None:
 
-            def criterion_internal(x, aux):
+            def criterion_internal(x, aux):  # noqa: U100
                 return criterion(x), None
 
-            def derivative_internal(x, aux):
+            def derivative_internal(x, aux):  # noqa: U100
                 return derivative(x), None
 
         else:
@@ -174,10 +176,10 @@ def process_functions(criterion, derivative, counts, aux_data):
 
         if aux_data is None:
 
-            def criterion_internal(x, aux):
+            def criterion_internal(x, aux):  # noqa: U100
                 return criterion(x) * obs_weights, None
 
-            def derivative_internal(x, aux):
+            def derivative_internal(x, aux):  # noqa: U100
                 return derivative(x) * obs_weights[:, None], None
 
         else:
