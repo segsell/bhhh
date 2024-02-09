@@ -51,3 +51,25 @@ def test_get_criterion_function(input_data, init_dict):
 
     gradient = func_dict["criterion_derivative"](result_bhhh["solution_x"])
     assert_allclose(gradient.sum(), 0, atol=1e-4)
+
+
+@pytest.mark.xfail(reason="under investigation.")
+@pytest.mark.skipif(not IS_RUSPY_INSTALLED, reason="ruspy not installed.")
+def test_get_criterion_function_aux(input_data, init_dict):
+    func_dict, _ = get_criterion_function(init_dict, input_data)
+
+    result_bhhh = minimize_bhhh(
+        criterion=func_dict["criterion_function"],
+        derivative=func_dict["criterion_derivative"],
+        x=np.array([10, 2]),
+        convergence_absolute_gradient_tolerance=1e-12,
+        stopping_max_iterations=500,
+        counts=np.ones(4292),
+    )
+    sol = np.array([10.0749422, 2.29309298])
+
+    assert_allclose(result_bhhh["solution_x"], sol, atol=5e-5)
+    assert_allclose(result_bhhh["solution_criterion"].sum(), 163.58428365)
+
+    gradient = func_dict["criterion_derivative"](result_bhhh["solution_x"])
+    assert_allclose(gradient.sum(), 0, atol=1e-4)

@@ -97,6 +97,7 @@ def minimize_bhhh(
             step_size /= 2
 
             if step_size <= 0.01:
+
                 # Accept step
                 x_accepted = x_candidate
                 criterion_accepted = criterion_candidate
@@ -137,9 +138,9 @@ def minimize_bhhh(
 
 
 def process_functions(criterion, derivative, counts, aux_data):
-    """This function processes the criterion and derivative function.
+    """Process criterion and derivative function.
 
-    Both can handle auxiliary data as well as a cell based likelihood.
+    Both functions can handle auxiliary data as well as a cell based likelihood.
     If has_aux is True criterion and derivative function ar both expected
     to take two arguments and return two arguments.
 
