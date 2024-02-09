@@ -1,3 +1,4 @@
+"""Optional test using the ruspy package."""
 import sys
 from pathlib import Path
 
