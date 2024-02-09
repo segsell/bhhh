@@ -21,9 +21,9 @@ dependencies:
   - pdbpp
   - pre-commit
 
+  # Test dependency
+  - ruspy
+
   - pip:
 
     - -e ../ # install locally
-
-    # Test dependency
-    - ruspy
