@@ -21,8 +21,7 @@ jobs:
         os:
           - ubuntu-latest
         python-version:
-          - '3.10'
-          - '3.11'
+          - '3.9'
     steps:
       - uses: actions/checkout@v3
       - name: create build environment
@@ -42,7 +41,7 @@ jobs:
           micromamba activate bhhh
           pytest --cov-report=xml --cov=./
       - name: Upload coverage report.
-        if: runner.os == 'Linux' && matrix.python-version == '3.10'
+        if: runner.os == 'Linux' && matrix.python-version == '3.9'
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
