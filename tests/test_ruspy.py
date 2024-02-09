@@ -1,31 +1,18 @@
 """Optional test using the ruspy package."""
-import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
 from bhhh.minimize import minimize_bhhh
-
-sys.path.insert(0, "ruspy/")
+from ruspy.estimation.criterion_function import get_criterion_function
 
 TEST_DIR = Path(__file__).parent
 
 
-from ruspy.estimation.criterion_function import get_criterion_function
-
-
 @pytest.fixture()
 def input_data():
-    df_in = pd.read_pickle(
-        TEST_DIR
-        / "ruspy"
-        / "docs"
-        / "source"
-        / "tutorials"
-        / "replication"
-        / "group_4.pkl"
-    )
+    df_in = pd.read_pickle(TEST_DIR / "replication_ruspy" / "group_4.pkl")
     return df_in
 
 
