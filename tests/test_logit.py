@@ -1,4 +1,5 @@
 """Test the BHHH algorithm."""
+
 import numpy as np
 import pytest
 import statsmodels.api as sm

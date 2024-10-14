@@ -1,4 +1,5 @@
 """Implementation of the unconstrained Berndt-Hall-Hall-Hausman (BHHH) algorithm."""
+
 from typing import Optional
 
 import numpy as np
