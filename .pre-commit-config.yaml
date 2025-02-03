@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.2.0
+    rev: v5.0.0
     hooks:
     -   id: check-added-large-files
         args: ["--maxkb=1000"]
@@ -14,7 +14,7 @@ repos:
     -   id: mixed-line-ending
     -   id: trailing-whitespace
 -   repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.9.0
+    rev: v1.10.0
     hooks:
     -   id: python-check-blanket-noqa
     -   id: python-check-mock-methods
@@ -23,24 +23,24 @@ repos:
     -   id: python-use-type-annotations
     -   id: text-unicode-replacement-char
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v2.32.0
+    rev: v3.19.1
     hooks:
     -   id: pyupgrade
         args: [--py37-plus]
--   repo: https://github.com/asottile/reorder_python_imports
-    rev: v3.0.1
+-   repo: https://github.com/asottile/reorder-python-imports
+    rev: v3.14.0
     hooks:
     -   id: reorder-python-imports
 -   repo: https://github.com/asottile/setup-cfg-fmt
-    rev: v1.20.0
+    rev: v2.7.0
     hooks:
     -   id: setup-cfg-fmt
 -   repo: https://github.com/psf/black
-    rev: 22.3.0
+    rev: 25.1.0
     hooks:
     -   id: black
 -   repo: https://github.com/PyCQA/flake8
-    rev: 4.0.1
+    rev: 7.1.1
     hooks:
     -   id: flake8
         additional_dependencies: [
@@ -61,17 +61,17 @@ repos:
         ]
         args: [--ignore, "N806, D404, D100, D103, E800", --docstring-convention, "google"]
 -   repo: https://github.com/guilatrova/tryceratops
-    rev: v1.0.1
+    rev: v2.4.1
     hooks:
     -   id: tryceratops
 -   repo: https://github.com/codespell-project/codespell
-    rev: v2.1.0
+    rev: v2.4.1
     hooks:
     -   id: codespell
         args: [--skip, "*.html,*ipynb,*.bib,paper/"]
 
 -   repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.14
+    rev: 0.7.22
     hooks:
     -   id: mdformat
         additional_dependencies: [
@@ -81,7 +81,7 @@ repos:
         args: [--wrap, "88"]
         files: (README.md)
 -   repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.14
+    rev: 0.7.22
     hooks:
     -   id: mdformat
         additional_dependencies: [
