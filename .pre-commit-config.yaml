@@ -1,100 +1,115 @@
+---
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
+  - repo: meta
+    hooks:
+      - id: check-hooks-apply
+      - id: check-useless-excludes
+    # -   id: identity  # Prints all files passed to pre-commits. Debugging.
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+  - repo: https://github.com/lyz-code/yamlfix
+    rev: 1.17.0
+    hooks:
+      - id: yamlfix
+  - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
-    -   id: check-added-large-files
-        args: ["--maxkb=1000"]
-    -   id: check-case-conflict
-    -   id: check-merge-conflict
-    -   id: check-vcs-permalinks
-    -   id: check-yaml
-    -   id: debug-statements
-    -   id: end-of-file-fixer
-    -   id: fix-byte-order-marker
-    -   id: mixed-line-ending
-    -   id: trailing-whitespace
--   repo: https://github.com/pre-commit/pygrep-hooks
+      - id: check-added-large-files
+        args:
+          - --maxkb=200
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-vcs-permalinks
+      - id: check-yaml
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: mixed-line-ending
+      - id: no-commit-to-branch
+        args:
+          - --branch
+          - main
+      - id: trailing-whitespace
+  - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
-    -   id: python-check-blanket-noqa
-    -   id: python-check-mock-methods
-    -   id: python-no-eval
-    -   id: python-no-log-warn
-    -   id: python-use-type-annotations
-    -   id: text-unicode-replacement-char
--   repo: https://github.com/asottile/pyupgrade
-    rev: v3.19.1
+      - id: python-check-blanket-noqa
+      - id: python-check-mock-methods
+      - id: python-no-eval
+      - id: python-no-log-warn
+      - id: python-use-type-annotations
+      - id: text-unicode-replacement-char
+  # - repo: https://github.com/asottile/reorder-python-imports
+  #   rev: v3.13.0
+  #   hooks:
+  #     - id: reorder-python-imports
+  #       args:
+  #         - --py37-plus
+  - repo: https://github.com/pycqa/isort
+    rev: 6.0.0
     hooks:
-    -   id: pyupgrade
-        args: [--py37-plus]
--   repo: https://github.com/asottile/reorder-python-imports
-    rev: v3.14.0
-    hooks:
-    -   id: reorder-python-imports
--   repo: https://github.com/asottile/setup-cfg-fmt
+      - id: isort
+        name: isort
+        args:
+          - --profile=black
+  - repo: https://github.com/asottile/setup-cfg-fmt
     rev: v2.7.0
     hooks:
-    -   id: setup-cfg-fmt
--   repo: https://github.com/psf/black
+      - id: setup-cfg-fmt
+  - repo: https://github.com/psf/black
     rev: 25.1.0
     hooks:
-    -   id: black
--   repo: https://github.com/PyCQA/flake8
-    rev: 7.1.1
+      - id: black
+        language_version: python3.11
+#  - repo: https://github.com/charliermarsh/ruff-pre-commit
+#    rev: v0.0.282
+#    hooks:
+#      - id: ruff
+#        exclude: |
+#          (?x)^(
+#            tests/|
+#            docs/source/conf.py|
+#          )$
+#  - repo: https://github.com/PyCQA/docformatter
+#    rev: v1.7.5
+#    hooks:
+#      - id: docformatter
+#        args:
+#          - --in-place
+#          - --wrap-summaries
+#          - '88'
+#          - --wrap-descriptions
+#          - '88'
+#          - --blank
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.9.1
     hooks:
-    -   id: flake8
-        additional_dependencies: [
-            flake8-alfred,
-            flake8-bugbear,
-            flake8-builtins,
-            flake8-comprehensions,
-            flake8-docstrings,
-            flake8-eradicate,
-            flake8-print,
-            flake8-pytest-style,
-            flake8-todo,
-            flake8-typing-imports,
-            flake8-unused-arguments,
-            pep8-naming,
-            pydocstyle,
-            Pygments,
-        ]
-        args: [--ignore, "N806, D404, D100, D103, E800", --docstring-convention, "google"]
--   repo: https://github.com/guilatrova/tryceratops
-    rev: v2.4.1
-    hooks:
-    -   id: tryceratops
--   repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
-    hooks:
-    -   id: codespell
-        args: [--skip, "*.html,*ipynb,*.bib,paper/"]
-
--   repo: https://github.com/executablebooks/mdformat
+      - id: nbqa-black
+      - id: nbqa-ruff
+  - repo: https://github.com/executablebooks/mdformat
     rev: 0.7.22
     hooks:
-    -   id: mdformat
-        additional_dependencies: [
-            mdformat-gfm,
-            mdformat-black,
-        ]
-        args: [--wrap, "88"]
-        files: (README.md)
--   repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.22
+      - id: mdformat
+        additional_dependencies:
+          - mdformat-gfm
+          - mdformat-black
+        args:
+          - --wrap
+          - '88'
+        files: (README\.md)
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
     hooks:
-    -   id: mdformat
-        additional_dependencies: [
-            mdformat-myst,
-            mdformat-black,
-        ]
-        args: [--wrap, "88"]
-        files: (docs/.)
-        # Exclude files with admonitions.
-        # exclude: |
-        #     (?x)^(
-        #         path/to/file.py
-        #     )$
--   repo: meta
-    hooks:
-    -   id: check-useless-excludes
+      - id: codespell
+        additional_dependencies:
+          - tomli
+# -   repo: https://github.com/mgedmin/check-manifest
+#     rev: "0.49"
+#     hooks:
+#     -   id: check-manifest
+#         args: [--no-build-isolation]
+#         additional_dependencies: [setuptools-scm, toml]
+ci:
+  autoupdate_schedule: monthly
