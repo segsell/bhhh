@@ -1,9 +1,6 @@
 """Implementation of the unconstrained Berndt-Hall-Hall-Hausman (BHHH) algorithm."""
 
-from typing import Any
-from typing import Dict
-from typing import Optional
-from typing import Union
+from typing import Any, Dict, Optional, Union
 
 import numpy as np
 
