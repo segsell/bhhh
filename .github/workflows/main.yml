@@ -43,12 +43,12 @@ jobs:
           micromamba activate bhhh
           pytest --cov-report=xml --cov=./
       - name: Upload coverage report.
-        if: runner.os == 'Linux' && matrix.python-version == '3.10'
-        uses: codecov/codecov-action@v3
+        if: runner.os == 'Linux' && matrix.python-version == '3.11'
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
   run-tests-linux-with-ruspy:
-    name: Run tests for ${{ matrix.os }} on ${{ matrix.python-version }} with ruspy installation
+    name: Run tests for ${{ matrix.os }} on ${{ matrix.python-version }} with ruspy
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -62,7 +62,7 @@ jobs:
       - name: create build environment
         uses: mamba-org/setup-micromamba@v1
         with:
-          environment-file: ./.envs/testenv-ruspy.yml
+          environment-file: ./.envs/testenv.yml
           environment-name: bhhh
           create-args: |
             python=${{ matrix.python-version }}
@@ -77,6 +77,6 @@ jobs:
           pytest --cov-report=xml --cov=./
       - name: Upload coverage report.
         if: runner.os == 'Linux' && matrix.python-version == '3.9'
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
