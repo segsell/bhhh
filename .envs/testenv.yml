@@ -1,9 +1,8 @@
+---
 name: bhhh
-
 channels:
   - defaults
   - conda-forge
-
 dependencies:
   - pip
   - pytest
@@ -19,7 +18,5 @@ dependencies:
   - black
   - pdbpp
   - pre-commit
-
   - pip:
-
-    - -e ../ # install locally
+      - -e ../  # install locally

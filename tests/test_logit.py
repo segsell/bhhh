@@ -1,11 +1,12 @@
 """Test the BHHH algorithm against statsmodels."""
+
 import numpy as np
 import pytest
 import statsmodels.api as sm
-from bhhh.minimize import minimize_bhhh
 from numpy.testing import assert_array_almost_equal as aaae
 from scipy.stats import norm
 
+from bhhh.minimize import minimize_bhhh
 
 # =====================================================================================
 # Test Data

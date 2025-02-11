@@ -1,12 +1,14 @@
 """Optional test using the ruspy package."""
+
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
+from numpy.testing import assert_allclose
+
 from bhhh.config import IS_RUSPY_INSTALLED
 from bhhh.minimize import minimize_bhhh
-from numpy.testing import assert_allclose
 
 if IS_RUSPY_INSTALLED:
     from ruspy.estimation.criterion_function import get_criterion_function
