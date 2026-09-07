@@ -6,15 +6,15 @@ repos:
       - id: check-useless-excludes
     # -   id: identity  # Prints all files passed to pre-commits. Debugging.
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.35.1
+    rev: v1.38.0
     hooks:
       - id: yamllint
   - repo: https://github.com/lyz-code/yamlfix
-    rev: 1.17.0
+    rev: 1.19.1
     hooks:
       - id: yamlfix
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
         args:
@@ -48,18 +48,18 @@ repos:
   #       args:
   #         - --py37-plus
   - repo: https://github.com/pycqa/isort
-    rev: 6.0.0
+    rev: 9.0.1
     hooks:
       - id: isort
         name: isort
         args:
           - --profile=black
   - repo: https://github.com/asottile/setup-cfg-fmt
-    rev: v2.7.0
+    rev: v3.2.0
     hooks:
       - id: setup-cfg-fmt
-  - repo: https://github.com/psf/black
-    rev: 25.1.0
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 26.5.1
     hooks:
       - id: black
         language_version: python3.11
@@ -89,7 +89,7 @@ repos:
       - id: nbqa-black
       - id: nbqa-ruff
   - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.22
+    rev: 1.0.0
     hooks:
       - id: mdformat
         additional_dependencies:
@@ -100,7 +100,7 @@ repos:
           - '88'
         files: (README\.md)
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
+    rev: v2.4.3
     hooks:
       - id: codespell
         additional_dependencies:
